@@ -337,18 +337,22 @@ if( NOT HDF5_FOUND )
     # If the HDF5 include directory was found, open H5pubconf.h to determine if
     # HDF5 was compiled with parallel IO support
     set( HDF5_IS_PARALLEL FALSE )
+    set( HDF5_VERSION "" )
     foreach( _dir IN LISTS HDF5_INCLUDE_DIRS )
         if( EXISTS "${_dir}/H5pubconf.h" )
             file( STRINGS "${_dir}/H5pubconf.h"
                 HDF5_HAVE_PARALLEL_DEFINE
                 REGEX "HAVE_PARALLEL 1" )
+            if( HDF5_HAVE_PARALLEL_DEFINE )
+                set( HDF5_IS_PARALLEL TRUE )
+            endif()
+
             file( STRINGS "${_dir}/H5pubconf.h"
                 HDF5_VERSION_DEFINE
                 REGEX "#define H5_VERSION" )
-            string(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)"
-                HDF5_VERSION ${HDF5_VERSION_DEFINE})
-            if( HDF5_HAVE_PARALLEL_DEFINE )
-                set( HDF5_IS_PARALLEL TRUE )
+            if( "${HDF5_VERSION_DEFINE}" MATCHES
+                "H5_VERSION[ \t]+\"([0-9]+\\.[0-9]+\\.[0-9]+)\"" )
+                set( HDF5_VERSION "${CMAKE_MATCH_1}" )
             endif()
         endif()
     endforeach()
